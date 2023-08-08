@@ -1,0 +1,4 @@
+name: AntiBookBan
+version: '${project.version}'
+main: me.mana.antipacketban.AntiPacketBan
+api-version: '1.20'
