@@ -2,9 +2,10 @@
  Prevents all types of packet bans without needing to artificially impose dumb limitations
 
 # Dependencies
-## ProtocolLib
-https://github.com/dmulloy2/ProtocolLib
-Note that this depends on an edited version which has sendServerPacket and getSize implemented in PacketContainer.
+## None :D
+
+# Compatible versions
+Tested on 1.20.1
 
 # Credits
 29 for setting up the repo and stuff
