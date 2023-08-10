@@ -1,0 +1,1 @@
+copy .\target\AntiPacketBan-1.0.jar "Q:\Documents\Minecraft Servers\1.20.1\plugins\AntiPacketBan-1.0.jar"
