@@ -25,6 +25,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -178,28 +179,43 @@ public abstract class TinyProtocol {
             public final void onPlayerLogin(PlayerLoginEvent e) {
                 if (closed)
                     return;
-
-                Channel channel = getChannel(e.getPlayer());
-
-                // Don't inject players that have been explicitly uninjected
-                if (!uninjectedChannels.contains(channel)) {
-                    try
-                    {
+                try
+                {
+                    Channel channel = getChannel(e.getPlayer());
+                    // Don't inject players that have been explicitly uninjected
+                    if (!uninjectedChannels.contains(channel)) {
                         injectPlayer(e.getPlayer());
                     }
-                    catch (IllegalArgumentException except)
-                    {
-                        new BukkitRunnable() {
-                            @Override
-                            public void run() {
-                                registerChannelHandler();
-                                registerPlayers(plugin);
-                                plugin.getLogger().info("[TinyProtocol] Late bind injection successful.");
-                            }
-                        }.runTask(plugin);
-                    }
+                }
+                catch (IllegalArgumentException exception)
+                {
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            registerChannelHandler();
+                            injectPlayer(e.getPlayer());
+                            plugin.getLogger().info("[TinyProtocol] Late bind injection successful.");
+                        }
+                    }.runTask(plugin);
+                }
+
+
+
+            }
+            @EventHandler(priority = EventPriority.LOWEST)
+            public final void onPlayerQuit(PlayerQuitEvent e)
+            {
+                try
+                {
+                    uninjectPlayer(e.getPlayer());
+                }
+                catch (IllegalArgumentException exception)
+                {
 
                 }
+
+
+
             }
 
             @EventHandler
@@ -434,23 +450,13 @@ public abstract class TinyProtocol {
             if(connection == null){
                 throw new IllegalArgumentException("EntityPlayer.Connection is null.");
             }
-            //VERY unintuitive but it is what it is
-
-            //Object connection = getConnection.get(player);
-            //Object manager = getManager.get(connection);
-            //Object manager = getManager.get(connection);
-            //Object manager = connection;
 
             //fuck you and your reflections protocollib
             //jar remappings on top
             try
             {
-
-                plugin.getLogger().info(ServerGamePacketListenerImpl.class.toString());
                 //name is "ServerGamePacketListenerImpl.connection" in the remapped jar but it is private :(
                 Field ConnectionManagerConnectionField = ServerGamePacketListenerImpl.class.getField("h");
-                plugin.getLogger().info(ConnectionManagerConnectionField.toString());
-                plugin.getLogger().info(connection.toString());
                 Connection manager = (Connection) ConnectionManagerConnectionField.get(connection);
                 channelLookup.put(player.getName(), channel = manager.channel);
             }
